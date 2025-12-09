@@ -2,8 +2,6 @@ name: Build Android APK
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ main ]
 
 jobs:
   build:
@@ -17,13 +15,19 @@ jobs:
         with:
           node-version: 20
 
+      - name: Setup Java (Java 21 required by Capacitor)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+
       - name: Install dependencies
         run: npm install
 
-      - name: Build React
+      - name: Build React App
         run: npm run build
 
-      - name: Install Capacitor Android
+      - name: Install Capacitor
         run: |
           npm install @capacitor/core @capacitor/cli
           npx cap sync android
@@ -35,7 +39,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --warning-mode all
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
